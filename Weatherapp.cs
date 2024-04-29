@@ -145,7 +145,8 @@ namespace WeatherLogApplication
        private static void WeekReport()
 {
     Console.WriteLine("\nWeek Report:");
-
+ Console.Write("Enter the start date of the week (yyyy-MM-dd): ");
+    string startDateStr = Console.ReadLine();
     // Fetch weather data for the week
     DateTime startDate = DateTime.Today;
     DateTime endDate = startDate.AddDays(6); // Get weather data for the next 6 days
