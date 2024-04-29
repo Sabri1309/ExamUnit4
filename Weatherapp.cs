@@ -103,7 +103,7 @@ namespace WeatherLogApplication
             {
                 using (HttpClient client = new HttpClient())
                 {
-                    client.DefaultRequestHeaders.Add("Weatherapp", "ssdiab@uia.no");
+                    client.DefaultRequestHeaders.Add("Weatherapp.no", "ssdiab@uia.no");
 
                     string response = await client.GetStringAsync(YRApiUrl);
                     dynamic jsonData = JsonSerializer.Deserialize<dynamic>(response);
@@ -142,15 +142,169 @@ namespace WeatherLogApplication
             }
         }
 
-        private static void WeekReport()
+       private static void WeekReport()
+{
+    Console.WriteLine("\nWeek Report:");
+
+    // Fetch weather data for the week
+    DateTime startDate = DateTime.Today;
+    DateTime endDate = startDate.AddDays(6); // Get weather data for the next 6 days
+    var weatherData = FetchWeatherDataForPeriod(startDate, endDate).Result;
+
+    if (weatherData != null)
+    {
+        // Analyze weather data and display the report
+        double averageTemperature = CalculateAverageTemperatureForPeriod(weatherData);
+        double maxTemperature = CalculateMaxTemperatureForPeriod(weatherData);
+        double minTemperature = CalculateMinTemperatureForPeriod(weatherData);
+
+ static double CalculateAverageTemperatureForPeriod(dynamic weatherData)
+{
+    double sum = 0.0;
+    int count = 0;
+
+    foreach (var dataPoint in weatherData["timeseries"])
+    {
+        double temperature = (double)dataPoint["data"]["instant"]["details"]["air_temperature"];
+        sum += temperature;
+        count++;
+    }
+
+    return count > 0 ? sum / count : 0.0;
+}
+
+ static double CalculateMaxTemperatureForPeriod(dynamic weatherData)
+{
+    double maxTemperature = double.MinValue;
+
+    foreach (var dataPoint in weatherData["timeseries"])
+    {
+        double temperature = (double)dataPoint["data"]["instant"]["details"]["air_temperature"];
+        if (temperature > maxTemperature)
         {
-            throw new NotImplementedException();
+            maxTemperature = temperature;
         }
+    }
+
+    return maxTemperature != double.MinValue ? maxTemperature : 0.0;
+}
+
+ static double CalculateMinTemperatureForPeriod(dynamic weatherData)
+{
+    double minTemperature = double.MaxValue;
+
+    foreach (var dataPoint in weatherData["timeseries"])
+    {
+        double temperature = (double)dataPoint["data"]["instant"]["details"]["air_temperature"];
+        if (temperature < minTemperature)
+        {
+            minTemperature = temperature;
+        }
+    }
+
+    return minTemperature != double.MaxValue ? minTemperature : 0.0;
+}
+
+
+
+        Console.WriteLine($"Average Temperature for the Week: {averageTemperature} °C");
+        Console.WriteLine($"Max Temperature for the Week: {maxTemperature} °C");
+        Console.WriteLine($"Min Temperature for the Week: {minTemperature} °C");
+    }
+    else
+    {
+        Console.WriteLine("Failed to fetch weather data for the week.");
+    }
+}
+
 
         private static void MonthReport()
+{
+    Console.WriteLine("\nEnter month and year for the report (MM-yyyy): ");
+    string monthYearStr = Console.ReadLine();
+
+    if (DateTime.TryParseExact(monthYearStr, "MM-yyyy", null, System.Globalization.DateTimeStyles.None, out DateTime monthYear))
+    {
+        // Assuming you want to fetch weather data for the entire month
+        DateTime startDate = new DateTime(monthYear.Year, monthYear.Month, 1);
+        DateTime endDate = startDate.AddMonths(1).AddDays(-1);
+
+        // Fetch weather data for the specified month
+        dynamic weatherData = FetchWeatherDataForPeriod(startDate, endDate).Result;
+
+        if (weatherData != null)
         {
-            throw new NotImplementedException();
+            // Calculate average, max, and min temperatures for the month
+            double averageTemperature = CalculateAverageTemperatureForPeriod(weatherData);
+            double maxTemperature = CalculateMaxTemperatureForPeriod(weatherData);
+            double minTemperature = CalculateMinTemperatureForPeriod(weatherData);
+
+ static double CalculateAverageTemperatureForPeriod(dynamic weatherData)
+{
+    double sum = 0.0;
+    int count = 0;
+
+    foreach (var dataPoint in weatherData["timeseries"])
+    {
+        double temperature = (double)dataPoint["data"]["instant"]["details"]["air_temperature"];
+        sum += temperature;
+        count++;
+    }
+
+    return count > 0 ? sum / count : 0.0;
+}
+
+ static double CalculateMaxTemperatureForPeriod(dynamic weatherData)
+{
+    double maxTemperature = double.MinValue;
+
+    foreach (var dataPoint in weatherData["timeseries"])
+    {
+        double temperature = (double)dataPoint["data"]["instant"]["details"]["air_temperature"];
+        if (temperature > maxTemperature)
+        {
+            maxTemperature = temperature;
         }
+    }
+
+    return maxTemperature != double.MinValue ? maxTemperature : 0.0;
+}
+
+ static double CalculateMinTemperatureForPeriod(dynamic weatherData)
+{
+    double minTemperature = double.MaxValue;
+
+    foreach (var dataPoint in weatherData["timeseries"])
+    {
+        double temperature = (double)dataPoint["data"]["instant"]["details"]["air_temperature"];
+        if (temperature < minTemperature)
+        {
+            minTemperature = temperature;
+        }
+    }
+
+    return minTemperature != double.MaxValue ? minTemperature : 0.0;
+}
+
+
+
+            // Display report
+            Console.WriteLine($"\nMonth Report for {monthYear.ToString("MMMM yyyy")}:");
+            Console.WriteLine($"Average Temperature: {averageTemperature} °C");
+            Console.WriteLine($"Maximum Temperature: {maxTemperature} °C");
+            Console.WriteLine($"Minimum Temperature: {minTemperature} °C");
+        }
+        else
+        {
+            Console.WriteLine("No weather data available for the specified month.");
+        }
+    }
+    else
+    {
+        Console.WriteLine("Invalid month and year format. Please enter in MM-yyyy format.");
+    }
+}
+
 
         static void DayReport()
         {
